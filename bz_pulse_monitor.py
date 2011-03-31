@@ -4,6 +4,7 @@ from mozillapulse import consumers
 
 import json
 import logging
+import os
 import socket
 
 class MessageHandler(object):
