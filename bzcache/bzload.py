@@ -49,4 +49,4 @@ class BugzillaLoad(object):
 
 if __name__ == '__main__':
   bzload = BugzillaLoad()
-  bzload.load('Core')
+  bzload.load('mozilla.org')

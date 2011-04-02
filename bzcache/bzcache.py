@@ -1,3 +1,5 @@
+import json
+
 from mozautoeslib import ESLib
 
 class BugzillaCache(object):
@@ -34,8 +36,21 @@ class BugzillaCache(object):
     return result['_id']
 
   def get_bugs(self, bugids):
-    bugs = self.eslib.query({ 'bugid': tuple(bugids) },
-                           doc_type=[self.doc_type])
+    bugs = {}
+    data = self.eslib.query({ 'bugid': tuple(bugids) },
+                            doc_type=[self.doc_type])
+
+    for bug in data:
+      bugs[bug['bugid']] = {
+        'status': bug['status'],
+        'id': bug['bugid'],
+        'summary': bug['summary']
+      }
+
+    # XXX need to identify bugs that weren't returned from the cache
+    # and grab the info from Bugzilla instead
+
+    return bugs
 
   def add_or_update_bug(self, bugid, status, summary, refresh=True):
     self.log("adding bug %s" % bugid)
