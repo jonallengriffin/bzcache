@@ -1,4 +1,5 @@
 import json
+import urllib
 
 from mozautoeslib import ESLib
 
@@ -35,8 +36,24 @@ class BugzillaCache(object):
 
     return result['_id']
 
+  def _get_bugzilla_data(self, bugid_array):
+    buginfo = {}
+    retVal = {}
+
+    apiURL = "https://api-dev.bugzilla.mozilla.org/latest/bug?id=" + ','.join(bugid_array) + "&include_fields=id,summary,status"
+
+    jsonurl = urllib.urlopen(apiURL)
+    buginfo = jsonurl.read()
+    jsonurl.close()
+    bugdict = []
+    bugdict = json.loads(buginfo)['bugs']
+    for bug in bugdict:
+        retVal[bug['id']] = bug
+    return retVal
+
   def get_bugs(self, bugids):
     bugs = {}
+    bugset = set(bugids)
     data = self.eslib.query({ 'bugid': tuple(bugids) },
                             doc_type=[self.doc_type])
 
@@ -46,9 +63,13 @@ class BugzillaCache(object):
         'id': bug['bugid'],
         'summary': bug['summary']
       }
+      bugset.remove(str(bug['bugid']))
 
-    # XXX need to identify bugs that weren't returned from the cache
-    # and grab the info from Bugzilla instead
+    if len(bugset):
+      bzbugs = self._get_bugzilla_data(list(bugset))
+      bugs.update(bzbugs)
+      for bzbug in bzbugs:
+        self.add_or_update_bug(bzbugs[bzbug]['id'], bzbugs[bzbug]['status'], bzbugs[bzbug]['summary'], False)
 
     return bugs
 
