@@ -47,6 +47,8 @@ def main():
                     help='path to file for logging output')
   parser.add_option('--daemon', dest='daemon', action='store_true',
                     help='run as daemon')
+  parser.add_option('--durable', dest='durable', action='store_true',
+                    help='use a durable pulse consumer')
   options, args = parser.parse_args()
 
   if options.daemon:
@@ -66,7 +68,7 @@ def main():
 
   handler = MessageHandler(logger)
   pulse = consumers.BugzillaConsumer(applabel='autolog@mozilla.com|bz_monitor_' + socket.gethostname())
-  pulse.configure(topic="bug.#", callback=handler.got_message, durable=False)
+  pulse.configure(topic="bug.#", callback=handler.got_message, durable=options.durable)
   pulse.listen()
 
 if __name__ == "__main__":
