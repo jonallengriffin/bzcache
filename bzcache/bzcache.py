@@ -76,6 +76,9 @@ class BugzillaCache(object):
   def add_or_update_bug(self, bugid, status, summary, refresh=True):
     self.log("adding bug %s" % bugid)
 
+    # make sure bugid is a string, for consistency
+    bugid = str(bugid)
+
     try:
 
       # refresh the index to make sure it's up-to-date
