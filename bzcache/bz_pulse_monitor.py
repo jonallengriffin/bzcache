@@ -34,9 +34,9 @@ class MessageHandler(object):
         status = data['payload']['bug']['status']
         summary = data['payload']['bug']['summary']
         self.bzcache.add_or_update_bug(bugid, status, summary)
-      except KeyError:
-        # just ignore this message
-        pass
+      except KeyError, inst:
+        self.log('exception handling message %s' % key)
+        self.log(inst)
 
 def main():
   import optparse
