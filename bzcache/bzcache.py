@@ -1,3 +1,4 @@
+import datetime
 import json
 import urllib
 
@@ -74,10 +75,10 @@ class BugzillaCache(object):
     return bugs
 
   def add_or_update_bug(self, bugid, status, summary, refresh=True):
-    self.log("adding bug %s" % bugid)
-
     # make sure bugid is a string, for consistency
     bugid = str(bugid)
+
+    date = datetime.datetime.now().strftime('%Y-%m-%d, %H:%M:%S')
 
     try:
 
@@ -99,10 +100,12 @@ class BugzillaCache(object):
       # otherwise add it
       if bug:
         id = self._add_doc(data, bug[0]['_id'])
-        self.log("%s updated" % id)
+        self.log("%s - %s updated, old status: %s, new status: %s, id: %s" % \
+                 (date, bugid, bug[0]['_source']['status'], status, id))
       else:
         id = self._add_doc(data)
-        self.log("%s added" % id)
+        self.log("%s - %s added, status: %s, id: %s" % (date, bugid, status, id))
 
     except Exception, inst:
+      self.log('%s - exception while processing bug %s' % (date, id))
       self.log(inst)
