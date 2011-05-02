@@ -102,6 +102,9 @@ class BugzillaCache(object):
         id = self._add_doc(data, bug[0]['_id'])
         self.log("%s - %s updated, old status: %s, new status: %s, id: %s" % \
                  (date, bugid, bug[0]['_source']['status'], status, id))
+        if status == bug[0]['_source']['status'] and \
+           summary == bug[0]['_source']['summary']:
+          return False
       else:
         id = self._add_doc(data)
         self.log("%s - %s added, status: %s, id: %s" % (date, bugid, status, id))
@@ -109,3 +112,5 @@ class BugzillaCache(object):
     except Exception, inst:
       self.log('%s - exception while processing bug %s' % (date, id))
       self.log(inst)
+
+    return True

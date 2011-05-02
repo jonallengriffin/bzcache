@@ -32,6 +32,8 @@ class MessageHandler(object):
       try:
         bugid = data['payload']['bug']['id']
         status = data['payload']['bug']['status']
+        if 'changed.status' in key:
+          status = data['payload']['after']
         summary = data['payload']['bug']['summary']
         self.bzcache.add_or_update_bug(bugid, status, summary)
       except KeyError, inst:
