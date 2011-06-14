@@ -1,6 +1,5 @@
 from bzcache import BugzillaCache
 from daemon import createDaemon
-from mozautoeslib import ESLib
 from mozillapulse import consumers
 
 import json
@@ -13,6 +12,8 @@ class MessageHandler(object):
   def __init__(self, logger):
     self.keys = ['bug.changed.status',
                  'bug.changed.summary',
+                 'bug.added.whiteboard',
+                 'bug.changed.whiteboard',
                  'bug.new']
     self.logger = logger
     self.bzcache = BugzillaCache(logger=self.logger)
@@ -27,6 +28,7 @@ class MessageHandler(object):
     message.ack()
 
     key = data['_meta']['routing_key']
+    #print key, data['payload']['bug']['id']
 
     if key in self.keys:
       try:
@@ -35,7 +37,12 @@ class MessageHandler(object):
         if 'changed.status' in key:
           status = data['payload']['after']
         summary = data['payload']['bug']['summary']
-        self.bzcache.add_or_update_bug(bugid, status, summary)
+        whiteboard = data['payload']['bug']['whiteboard']
+        if 'changed.whiteboard' in key:
+          whiteboard = data['payload']['after']
+        elif 'added.whiteboard' in key:
+          whiteboard = data['payload']['value']
+        self.bzcache.add_or_update_bug(bugid, status, summary, whiteboard)
       except KeyError, inst:
         self.log('exception handling message %s' % key)
         self.log(inst)
@@ -70,7 +77,7 @@ def main():
 
   handler = MessageHandler(logger)
   pulse = consumers.BugzillaConsumer(applabel='autolog@mozilla.com|bz_monitor_' + socket.gethostname())
-  pulse.configure(topic="bug.#", callback=handler.got_message, durable=options.durable)
+  pulse.configure(topic="#", callback=handler.got_message, durable=options.durable)
   pulse.listen()
 
 if __name__ == "__main__":

@@ -41,7 +41,9 @@ class BugzillaCache(object):
     buginfo = {}
     retVal = {}
 
-    apiURL = "https://api-dev.bugzilla.mozilla.org/latest/bug?id=" + ','.join(bugid_array) + "&include_fields=id,summary,status"
+    apiURL = ("https://api-dev.bugzilla.mozilla.org/latest/bug?id=" + 
+              ','.join(bugid_array) + 
+              "&include_fields=id,summary,status,whiteboard")
 
     jsonurl = urllib.urlopen(apiURL)
     buginfo = jsonurl.read()
@@ -62,7 +64,8 @@ class BugzillaCache(object):
       bugs[bug['bugid']] = {
         'status': bug['status'],
         'id': bug['bugid'],
-        'summary': bug['summary']
+        'summary': bug['summary'],
+        'whiteboard': bug.get('whiteboard')
       }
       bugset.remove(str(bug['bugid']))
 
@@ -70,11 +73,15 @@ class BugzillaCache(object):
       bzbugs = self._get_bugzilla_data(list(bugset))
       bugs.update(bzbugs)
       for bzbug in bzbugs:
-        self.add_or_update_bug(bzbugs[bzbug]['id'], bzbugs[bzbug]['status'], bzbugs[bzbug]['summary'], False)
+        self.add_or_update_bug(bzbugs[bzbug]['id'],
+                               bzbugs[bzbug]['status'],
+                               bzbugs[bzbug]['summary'],
+                               bzbugs[bzbug].get('whiteboard'),
+                               False)
 
     return bugs
 
-  def add_or_update_bug(self, bugid, status, summary, refresh=True):
+  def add_or_update_bug(self, bugid, status, summary, whiteboard, refresh=True):
     # make sure bugid is a string, for consistency
     bugid = str(bugid)
 
@@ -93,7 +100,8 @@ class BugzillaCache(object):
 
       data = { 'bugid': bugid,
                'status': status,
-               'summary': summary
+               'summary': summary,
+               'whiteboard': whiteboard,
              }
 
       # if there's already an instance of this bug in ES, update it,
@@ -103,7 +111,8 @@ class BugzillaCache(object):
         self.log("%s - %s updated, old status: %s, new status: %s, id: %s" % \
                  (date, bugid, bug[0]['_source']['status'], status, id))
         if status == bug[0]['_source']['status'] and \
-           summary == bug[0]['_source']['summary']:
+           summary == bug[0]['_source']['summary'] and \
+           whiteboard == bug[0]['_source']['whiteboard']:
           return False
       else:
         id = self._add_doc(data)
