@@ -54,29 +54,38 @@ class BugzillaCache(object):
         retVal[bug['id']] = bug
     return retVal
 
-  def get_bugs(self, bugids):
+  def get_bugs(self, bugids, whiteboard=''):
     bugs = {}
     bugset = set(bugids)
     data = self.eslib.query({ 'bugid': tuple(bugids) },
                             doc_type=[self.doc_type])
 
     for bug in data:
-      bugs[bug['bugid']] = {
-        'status': bug['status'],
-        'id': bug['bugid'],
-        'summary': bug['summary'],
-        'whiteboard': bug.get('whiteboard')
-      }
+      bug_whiteboard = bug.get('whiteboard', '')
+      if whiteboard in bug_whiteboard:
+        bugs[bug['bugid']] = {
+          'status': bug['status'],
+          'id': bug['bugid'],
+          'summary': bug['summary'],
+          'whiteboard': bug_whiteboard
+        }
       bugset.remove(str(bug['bugid']))
 
     if len(bugset):
       bzbugs = self._get_bugzilla_data(list(bugset))
-      bugs.update(bzbugs)
       for bzbug in bzbugs:
+        bug_whiteboard = bzbugs[bzbug].get('whiteboard', '')
+        if whiteboard in bug_whiteboard:
+          bugs.update({bzbug: {
+                        'id': bzbug,
+                        'status': bzbugs[bzbug]['status'],
+                        'summary': bzbugs[bzbug]['summary'],
+                        'whiteboard': bug_whiteboard
+                      }})
         self.add_or_update_bug(bzbugs[bzbug]['id'],
                                bzbugs[bzbug]['status'],
                                bzbugs[bzbug]['summary'],
-                               bzbugs[bzbug].get('whiteboard'),
+                               bug_whiteboard,
                                False)
 
     return bugs
