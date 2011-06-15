@@ -64,8 +64,7 @@ class BugzillaCache(object):
       bugs[bug['bugid']] = {
         'status': bug['status'],
         'id': bug['bugid'],
-        'summary': bug['summary'],
-        'whiteboard': bug.get('whiteboard')
+        'summary': bug['summary']
       }
       bugset.remove(str(bug['bugid']))
 
