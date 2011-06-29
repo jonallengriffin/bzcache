@@ -20,7 +20,7 @@ def main():
     (str(earlier), str(today))
   print datetime.datetime.now(), url
 
-  # retrieve teh url
+  # retrieve the url
   data = urllib.urlopen(url)
   data.read()
 
