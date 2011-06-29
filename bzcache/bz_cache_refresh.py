@@ -16,7 +16,7 @@ def main():
   # calculate the startday and endday parameters
   today = datetime.date.today()
   earlier = today - datetime.timedelta(60)
-  url = "http://brasstacks.mozilla.com/orangefactor/api/bybug?startday=%s&endday=%s&tree=All" % \
+  url = "http://10.2.76.100/orangefactor/api/bybug?startday=%s&endday=%s&tree=All" % \
     (str(earlier), str(today))
   print datetime.datetime.now(), url
 
