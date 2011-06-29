@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import socket
+import time
 
 class MessageHandler(object):
 
@@ -78,7 +79,13 @@ def main():
   handler = MessageHandler(logger)
   pulse = consumers.BugzillaConsumer(applabel='autolog@mozilla.com|bz_monitor_' + socket.gethostname())
   pulse.configure(topic="#", callback=handler.got_message, durable=options.durable)
-  pulse.listen()
+  while True:
+    try:
+      handler.log('starting pulse listener')
+      pulse.listen()
+    except Exception, inst:
+      handler.log('exception while listening for pulse messages: %s' % inst)
+      time.sleep(600)
 
 if __name__ == "__main__":
   main()
