@@ -69,7 +69,10 @@ class BugzillaCache(object):
           'summary': bug['summary'],
           'whiteboard': bug_whiteboard
         }
-      bugset.remove(str(bug['bugid']))
+      try:
+        bugset.remove(str(bug['bugid']))
+      except:
+        pass
 
     if len(bugset):
       bzbugs = self._get_bugzilla_data(list(bugset))
