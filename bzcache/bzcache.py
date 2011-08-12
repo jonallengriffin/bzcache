@@ -127,7 +127,7 @@ class BugzillaCache(object):
            whiteboard == bug[0]['_source']['whiteboard']:
           return False
       else:
-        id = self._add_doc(data)
+        id = self._add_doc(data, bugid)
         self.log("%s - %s added, status: %s, id: %s" % (date, bugid, status, id))
 
     except Exception, inst:
