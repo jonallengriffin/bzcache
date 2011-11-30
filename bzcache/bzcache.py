@@ -9,7 +9,7 @@ class BugzillaCache(object):
   def __init__(self, logger=None):
     self.doc_type = 'bugs'
     self.index = 'bzcache'
-    self.eslib = ESLib('elasticsearch1.metrics.sjc1.mozilla.com:9200', self.index)
+    self.eslib = ESLib('buildbot-es.metrics.sjc1.mozilla.com:9200', self.index)
     self.logger = logger
     self.create_index(self.index)
 
