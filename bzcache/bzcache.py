@@ -5,13 +5,18 @@ import urllib
 from mozautoeslib import ESLib
 
 DEFAULT_ES_SERVER = 'buildbot-es.metrics.sjc1.mozilla.com:9200'
+DEFAULT_BZAPI_SERVER = 'https://api-dev.bugzilla.mozilla.org/latest/'
 
 class BugzillaCache(object):
 
-  def __init__(self, logger=None, server=DEFAULT_ES_SERVER):
+  def __init__(self, logger=None, es_server=DEFAULT_ES_SERVER,
+               bzapi_server=DEFAULT_BZAPI_SERVER):
+    self.bzapi_server = bzapi_server
+    if self.bzapi_server[-1] != '/':
+      self.bzapi_server += '/'
     self.doc_type = 'bugs'
     self.index = 'bzcache'
-    self.eslib = ESLib(server, self.index)
+    self.eslib = ESLib(es_server, self.index)
     self.logger = logger
     self.create_index(self.index)
 
@@ -43,8 +48,7 @@ class BugzillaCache(object):
     buginfo = {}
     retVal = {}
 
-    apiURL = ("https://api-dev.bugzilla.mozilla.org/latest/bug?id=" + 
-              ','.join(bugid_array) + 
+    apiURL = (self.bzapi_server + "bug?id=" + ','.join(bugid_array) + 
               "&include_fields=id,summary,status,whiteboard")
 
     jsonurl = urllib.urlopen(apiURL)
