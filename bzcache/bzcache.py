@@ -4,12 +4,14 @@ import urllib
 
 from mozautoeslib import ESLib
 
+DEFAULT_ES_SERVER = 'buildbot-es.metrics.sjc1.mozilla.com:9200'
+
 class BugzillaCache(object):
 
-  def __init__(self, logger=None):
+  def __init__(self, logger=None, server=DEFAULT_ES_SERVER):
     self.doc_type = 'bugs'
     self.index = 'bzcache'
-    self.eslib = ESLib('buildbot-es.metrics.sjc1.mozilla.com:9200', self.index)
+    self.eslib = ESLib(server, self.index)
     self.logger = logger
     self.create_index(self.index)
 
