@@ -6,7 +6,7 @@ from pyes import ES
 
 def main():
   # delete and re-create the bzcache index, in order to nuke its contents
-  es = ES(['buildbot-es.metrics.sjc1.mozilla.com:9200'])
+  es = ES(['buildbot-es.metrics.scl3.mozilla.com:9200'])
   es.delete_index('bzcache')
   es.create_index('bzcache')
 

@@ -4,7 +4,7 @@ import urllib
 
 from mozautoeslib import ESLib
 
-DEFAULT_ES_SERVER = 'buildbot-es.metrics.sjc1.mozilla.com:9200'
+DEFAULT_ES_SERVER = 'buildbot-es.metrics.scl3.mozilla.com:9200'
 DEFAULT_BZAPI_SERVER = 'https://api-dev.bugzilla.mozilla.org/latest/'
 
 class BugzillaCache(object):
