@@ -44,6 +44,22 @@ class BugzillaCache(object):
 
     return result['_id']
 
+  def index_bugs_by_whiteboard(self, whiteboard):
+    # only look at bugs that have been updated in the last 6 months
+    ago = datetime.date.today() - datetime.timedelta(days=180)
+    apiURL = self.bzapi_server + "bug?whiteboard=%s&include_fields=id,summary,status,whiteboard&changed_after=%s" % (whiteboard, ago.strftime('%Y-%m-%d'))
+    jsonurl = urllib.urlopen(apiURL)
+    buginfo = jsonurl.read()
+    jsonurl.close()
+    bugdict = []
+    bugdict = json.loads(buginfo)['bugs']
+    for bug in bugdict:
+      self.add_or_update_bug(bug['id'],
+                             bug['status'],
+                             bug['summary'],
+                             bug['whiteboard'],
+                             False)
+
   def _get_bugzilla_data(self, bugid_array):
     buginfo = {}
     retVal = {}
@@ -111,30 +127,14 @@ class BugzillaCache(object):
       if refresh:
         self.refresh_index()
 
-      # look for an existing bug with this id
-      bug = self.eslib.query({ 'bugid': bugid },
-                             doc_type=[self.doc_type],
-                             withSource=True)
-
       data = { 'bugid': bugid,
                'status': status,
                'summary': summary,
                'whiteboard': whiteboard,
              }
 
-      # if there's already an instance of this bug in ES, update it,
-      # otherwise add it
-      if bug:
-        id = self._add_doc(data, bug[0]['_id'])
-        self.log("%s - %s updated, old status: %s, new status: %s, id: %s" % \
-                 (date, bugid, bug[0]['_source']['status'], status, id))
-        if status == bug[0]['_source']['status'] and \
-           summary == bug[0]['_source']['summary'] and \
-           whiteboard == bug[0]['_source']['whiteboard']:
-          return False
-      else:
-        id = self._add_doc(data, bugid)
-        self.log("%s - %s added, status: %s, id: %s" % (date, bugid, status, id))
+      id = self._add_doc(data, bugid)
+      self.log("%s - %s added, status: %s, id: %s" % (date, bugid, status, id))
 
     except Exception, inst:
       self.log('%s - exception while processing bug %s' % (date, id))
