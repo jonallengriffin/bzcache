@@ -14,9 +14,9 @@ def main():
     es.delete_index('bzcache')
     es.create_index('bzcache')
 
-    # re-cache all [orange] bugs
+    # re-cache all intermittent-failure bugs
     bzcache = BugzillaCache(es_server=ES_SERVER)
-    bzcache.index_bugs_by_whiteboard('[orange]')
+    bzcache.index_bugs_by_keyword('intermittent-failure')
 
     # Now, request an API from the WOO server that will cause all the bugs
     # relevant to WOO to be re-inserted into the cache.

@@ -44,10 +44,10 @@ class BugzillaCache(object):
 
     return result['_id']
 
-  def index_bugs_by_whiteboard(self, whiteboard):
+  def index_bugs_by_keyword(self, keyword):
     # only look at bugs that have been updated in the last 6 months
     ago = datetime.date.today() - datetime.timedelta(days=180)
-    apiURL = self.bzapi_server + "bug?whiteboard=%s&include_fields=id,summary,status,whiteboard&changed_after=%s" % (whiteboard, ago.strftime('%Y-%m-%d'))
+    apiURL = self.bzapi_server + "bug?keywords=%s&include_fields=id,summary,status,whiteboard&changed_after=%s" % (keyword, ago.strftime('%Y-%m-%d'))
     jsonurl = urllib.urlopen(apiURL)
     buginfo = jsonurl.read()
     jsonurl.close()
