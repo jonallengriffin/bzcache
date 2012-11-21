@@ -76,21 +76,19 @@ class BugzillaCache(object):
         retVal[bug['id']] = bug
     return retVal
 
-  def get_bugs(self, bugids, whiteboard=''):
+  def get_bugs(self, bugids):
     bugs = {}
     bugset = set(bugids)
     data = self.eslib.query({ 'bugid': tuple(bugids) },
                             doc_type=[self.doc_type])
 
     for bug in data:
-      bug_whiteboard = bug.get('whiteboard', '')
-      if whiteboard in bug_whiteboard:
-        bugs[bug['bugid']] = {
-          'status': bug['status'],
-          'id': bug['bugid'],
-          'summary': bug['summary'],
-          'whiteboard': bug_whiteboard
-        }
+      bugs[bug['bugid']] = {
+        'status': bug['status'],
+        'id': bug['bugid'],
+        'summary': bug['summary'],
+        'whiteboard': bug.get('whiteboard', '')
+      }
       try:
         bugset.remove(str(bug['bugid']))
       except:
@@ -100,13 +98,12 @@ class BugzillaCache(object):
       bzbugs = self._get_bugzilla_data(list(bugset))
       for bzbug in bzbugs:
         bug_whiteboard = bzbugs[bzbug].get('whiteboard', '')
-        if whiteboard in bug_whiteboard:
-          bugs.update({bzbug: {
-                        'id': bzbug,
-                        'status': bzbugs[bzbug]['status'],
-                        'summary': bzbugs[bzbug]['summary'],
-                        'whiteboard': bug_whiteboard
-                      }})
+        bugs.update({bzbug: {
+                      'id': bzbug,
+                      'status': bzbugs[bzbug]['status'],
+                      'summary': bzbugs[bzbug]['summary'],
+                      'whiteboard': bug_whiteboard
+                    }})
         self.add_or_update_bug(bzbugs[bzbug]['id'],
                                bzbugs[bzbug]['status'],
                                bzbugs[bzbug]['summary'],
