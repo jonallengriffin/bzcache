@@ -1,16 +1,19 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this file,
+# You can obtain one at http://mozilla.org/MPL/2.0/.
+
 import datetime
 import json
 import urllib
 
 from mozautoeslib import ESLib
 
-DEFAULT_ES_SERVER = 'buildbot-es.metrics.scl3.mozilla.com:9200'
-DEFAULT_BZAPI_SERVER = 'https://api-dev.bugzilla.mozilla.org/latest/'
+import config
 
 class BugzillaCache(object):
 
-  def __init__(self, logger=None, es_server=DEFAULT_ES_SERVER,
-               bzapi_server=DEFAULT_BZAPI_SERVER):
+  def __init__(self, logger=None, es_server=config.DEFAULT_ES_SERVER,
+               bzapi_server=config.DEFAULT_BZAPI_SERVER):
     self.bzapi_server = bzapi_server
     if self.bzapi_server[-1] != '/':
       self.bzapi_server += '/'
@@ -64,7 +67,7 @@ class BugzillaCache(object):
     buginfo = {}
     retVal = {}
 
-    apiURL = (self.bzapi_server + "bug?id=" + ','.join(bugid_array) + 
+    apiURL = (self.bzapi_server + "bug?id=" + ','.join(bugid_array) +
               "&include_fields=id,summary,status,whiteboard")
 
     jsonurl = urllib.urlopen(apiURL)

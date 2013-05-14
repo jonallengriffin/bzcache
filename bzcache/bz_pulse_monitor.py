@@ -1,23 +1,28 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this file,
+# You can obtain one at http://mozilla.org/MPL/2.0/.
+
 from bzcache import BugzillaCache
 from daemon import createDaemon
 from mozillapulse import consumers
 
-import json
 import logging
 import os
 import socket
 import time
 
+import config
+
 class MessageHandler(object):
 
-  def __init__(self, logger):
+  def __init__(self, es_server, logger):
     self.keys = ['bug.changed.status',
                  'bug.changed.summary',
                  'bug.added.whiteboard',
                  'bug.changed.whiteboard',
                  'bug.new']
     self.logger = logger
-    self.bzcache = BugzillaCache(logger=self.logger)
+    self.bzcache = BugzillaCache(es_server=es_server, logger=self.logger)
 
   def log(self, msg):
     if self.logger:
@@ -48,19 +53,7 @@ class MessageHandler(object):
         self.log('exception handling message %s' % key)
         self.log(inst)
 
-def main():
-  import optparse
-  parser = optparse.OptionParser()
-  parser.add_option('--pidfile', dest='pidfile',
-                    help='path to file for logging pid')
-  parser.add_option('--logfile', dest='logfile',
-                    help='path to file for logging output')
-  parser.add_option('--daemon', dest='daemon', action='store_true',
-                    help='run as daemon')
-  parser.add_option('--durable', dest='durable', action='store_true',
-                    help='use a durable pulse consumer')
-  options, args = parser.parse_args()
-
+def main(options):
   if options.daemon:
     createDaemon(options.pidfile, options.logfile)
 
@@ -76,7 +69,7 @@ def main():
     fp.write("%d\n" % os.getpid())
     fp.close()
 
-  handler = MessageHandler(logger)
+  handler = MessageHandler(options.es_server, logger)
   pulse = consumers.BugzillaConsumer(applabel='autolog@mozilla.com|bz_monitor_' + socket.gethostname())
   pulse.configure(topic="#", callback=handler.got_message, durable=options.durable)
   while True:
@@ -88,4 +81,19 @@ def main():
       time.sleep(600)
 
 if __name__ == "__main__":
-  main()
+  import optparse
+  parser = optparse.OptionParser()
+  parser.add_option('--es-server', dest='es_server',
+                    default=config.DEFAULT_ES_SERVER,
+                    help='address of ElasticSearch server; defaults to %s' %
+                    config.DEFAULT_ES_SERVER)
+  parser.add_option('--pidfile', dest='pidfile',
+                    help='path to file for logging pid')
+  parser.add_option('--logfile', dest='logfile',
+                    help='path to file for logging output')
+  parser.add_option('--daemon', dest='daemon', action='store_true',
+                    help='run as daemon')
+  parser.add_option('--durable', dest='durable', action='store_true',
+                    help='use a durable pulse consumer')
+  options, _ = parser.parse_args()
+  main(options)
