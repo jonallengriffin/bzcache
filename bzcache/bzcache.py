@@ -82,20 +82,27 @@ class BugzillaCache(object):
   def get_bugs(self, bugids):
     bugs = {}
     bugset = set(bugids)
-    data = self.eslib.query({ 'bugid': tuple(bugids) },
-                            doc_type=[self.doc_type])
 
-    for bug in data:
-      bugs[bug['bugid']] = {
-        'status': bug['status'],
-        'id': bug['bugid'],
-        'summary': bug['summary'],
-        'whiteboard': bug.get('whiteboard', '')
-      }
-      try:
-        bugset.remove(str(bug['bugid']))
-      except:
-        pass
+    # request bugs from ES in groups of 250
+    chunk_size = 250
+    bug_chunks = [list(bugset)[i:i+chunk_size]
+                  for i in range(0, len(bugset), chunk_size)]
+
+    for bug_chunk in bug_chunks:
+      data = self.eslib.query({ 'bugid': tuple(bug_chunk) },
+                              doc_type=[self.doc_type])
+
+      for bug in data:
+        bugs[bug['bugid']] = {
+          'status': bug['status'],
+          'id': bug['bugid'],
+          'summary': bug['summary'],
+          'whiteboard': bug.get('whiteboard', '')
+        }
+        try:
+          bugset.remove(str(bug['bugid']))
+        except:
+          pass
 
     if len(bugset):
       bzbugs = self._get_bugzilla_data(list(bugset))
