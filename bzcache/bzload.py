@@ -6,13 +6,14 @@ import datetime
 import json
 import urllib
 
+import config
 from bzcache import BugzillaCache
 from mozautoeslib import ESLib
 
 class BugzillaLoad(object):
 
   def __init__(self):
-    self.bzurl = 'https://api-dev.bugzilla.mozilla.org/latest/'
+    self.bzurl = config.DEFAULT_BZAPI_SERVER
     self.bzcache = BugzillaCache(logger=None)
 
   def _load_json_url(self, url):
