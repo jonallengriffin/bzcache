@@ -42,10 +42,13 @@ class BugzillaCache(object):
   def _add_doc(self, doc, id=None):
     result = self.eslib.add_doc(doc, id, doc_type=self.doc_type)
 
-    if not 'ok' in result or not result['ok'] or not '_id' in result:
-      raise Exception(json.dumps(result))
+    # ElasticSearch v1.x uses 'created', v0.9 uses 'ok'
+    created = result.get('created', False) or result.get('ok', False)
 
-    return result['_id']
+    if created and '_id' in result:
+      return result['_id']
+
+    raise Exception(json.dumps(result))
 
   def index_bugs_by_keyword(self, keyword):
     # only look at bugs that have been updated in the last 6 months
