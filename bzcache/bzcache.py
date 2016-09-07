@@ -95,10 +95,17 @@ class BugzillaCache(object):
                                  False)
 
   def _get_bugzilla_data(self, bugid_array):
-    apiURL = (self.bzapi_server + "bug?id=" + ','.join(bugid_array) +
-              "&include_fields=id,summary,status,whiteboard")
-    bugdict = self.fetch_json(apiURL).get('bugs', [])
-    return bugdict
+    # request bugs from Bugzilla in groups of 200
+    chunk_size = 200
+    bugs = []
+
+    bugid_chunks = [list(bugid_array)[i:i+chunk_size]
+                    for i in range(0, len(bugid_array), chunk_size)]
+    for bugid_chunk in bugid_chunks:
+        apiURL = (self.bzapi_server + "bug?id=" + ','.join(bugid_array) +
+                  "&include_fields=id,summary,status,whiteboard")
+        bugs += self.fetch_json(apiURL).get('bugs', [])
+    return bugs
 
   def get_bugs(self, bugids):
     bugs = {}
