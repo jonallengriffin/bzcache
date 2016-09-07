@@ -95,14 +95,10 @@ class BugzillaCache(object):
                                  False)
 
   def _get_bugzilla_data(self, bugid_array):
-    retVal = {}
-
     apiURL = (self.bzapi_server + "bug?id=" + ','.join(bugid_array) +
               "&include_fields=id,summary,status,whiteboard")
     bugdict = self.fetch_json(apiURL).get('bugs', [])
-    for bug in bugdict:
-        retVal[bug['id']] = bug
-    return retVal
+    return bugdict
 
   def get_bugs(self, bugids):
     bugs = {}
@@ -130,20 +126,20 @@ class BugzillaCache(object):
           pass
 
     if len(bugset):
-      bzbugs = self._get_bugzilla_data(list(bugset))
-      for bzbug in bzbugs:
-        bug_whiteboard = bzbugs[bzbug].get('whiteboard', '')
-        bugs.update({bzbug: {
-                      'id': bzbug,
-                      'status': bzbugs[bzbug]['status'],
-                      'summary': bzbugs[bzbug]['summary'],
-                      'whiteboard': bug_whiteboard
-                    }})
-        self.add_or_update_bug(bzbugs[bzbug]['id'],
-                               bzbugs[bzbug]['status'],
-                               bzbugs[bzbug]['summary'],
-                               bug_whiteboard,
-                               False)
+      for bzbug in self._get_bugzilla_data(list(bugset)):
+          bug_id = bzbug['id']
+          bug_whiteboard = bzbug.get('whiteboard', '')
+          bugs[bug_id] = {
+              'id': bzbug['id'],
+              'status': bzbug['status'],
+              'summary': bzbug['summary'],
+              'whiteboard': bug_whiteboard
+          }
+          self.add_or_update_bug(bug_id,
+                                 bzbug['status'],
+                                 bzbug['summary'],
+                                 bug_whiteboard,
+                                 False)
 
     return bugs
 
