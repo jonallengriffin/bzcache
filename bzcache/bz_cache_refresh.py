@@ -7,16 +7,21 @@ import urllib
 import urlparse
 
 from pyes import ES
+from pyes.exceptions import ElasticSearchException
 
 import config
 from bzcache import BugzillaCache
 
 
 def main(options):
-    # delete and re-create the bzcache index, in order to nuke its contents
     es = ES([options.es_server])
-    es.delete_index('bzcache')
-    es.create_index('bzcache')
+    try:
+        es.create_index_if_missing('bzcache')
+    except ElasticSearchException:
+        # create_index_if_missing is supposed not to raise if the index
+        # already existing, but with the ancient pyes / ES server versions
+        # we're using it still does.
+        pass
 
     # re-cache all intermittent-failure bugs
     bzcache = BugzillaCache(es_server=options.es_server)
