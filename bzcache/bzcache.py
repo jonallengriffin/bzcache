@@ -4,7 +4,6 @@
 
 import datetime
 import json
-import urllib
 
 import requests
 from mozautoeslib import ESLib
@@ -96,17 +95,11 @@ class BugzillaCache(object):
                                  False)
 
   def _get_bugzilla_data(self, bugid_array):
-    buginfo = {}
     retVal = {}
 
     apiURL = (self.bzapi_server + "bug?id=" + ','.join(bugid_array) +
               "&include_fields=id,summary,status,whiteboard")
-
-    jsonurl = urllib.urlopen(apiURL)
-    buginfo = jsonurl.read()
-    jsonurl.close()
-    bugdict = []
-    bugdict = json.loads(buginfo)['bugs']
+    bugdict = self.fetch_json(apiURL).get('bugs', [])
     for bug in bugdict:
         retVal[bug['id']] = bug
     return retVal
