@@ -6,6 +6,7 @@ import datetime
 import json
 import urllib
 
+import requests
 from mozautoeslib import ESLib
 
 import config
@@ -49,6 +50,16 @@ class BugzillaCache(object):
       return result['_id']
 
     raise Exception(json.dumps(result))
+
+  def fetch_json(self, url, params=None, timeout=30):
+      self.log('Fetching %s with params %s' % (url, params))
+      headers = {
+          'Accept': 'application/json',
+          'User-Agent': 'bzcache',
+      }
+      response = requests.get(url, params=params, headers=headers, timeout=timeout)
+      response.raise_for_status()
+      return response.json()
 
   def index_bugs_by_keyword(self, keyword):
     # only look at bugs that have been updated in the last 6 months
