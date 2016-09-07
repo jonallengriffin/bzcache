@@ -61,21 +61,39 @@ class BugzillaCache(object):
       response.raise_for_status()
       return response.json()
 
+  def fetch_intermittent_bugs(self, offset, limit):
+      url = config.BUGZILLA_URL + '/rest/bug'
+      params = {
+          'keywords': 'intermittent-failure',
+          # only look at bugs that have been updated in the last 6 months
+          'chfieldfrom': '-6m',
+          'include_fields': 'id,summary,status,whiteboard',
+          'offset': offset,
+          'limit': limit,
+      }
+      results = self.fetch_json(url, params=params)
+      return results.get('bugs', [])
+
   def index_bugs_by_keyword(self, keyword):
-    # only look at bugs that have been updated in the last 6 months
-    ago = datetime.date.today() - datetime.timedelta(days=180)
-    apiURL = self.bzapi_server + "bug?keywords=%s&include_fields=id,summary,status,whiteboard&changed_after=%s" % (keyword, ago.strftime('%Y-%m-%d'))
-    jsonurl = urllib.urlopen(apiURL)
-    buginfo = jsonurl.read()
-    jsonurl.close()
-    bugdict = []
-    bugdict = json.loads(buginfo)['bugs']
-    for bug in bugdict:
-      self.add_or_update_bug(bug['id'],
-                             bug['status'],
-                             bug['summary'],
-                             bug['whiteboard'],
-                             False)
+      bug_list = []
+
+      offset = 0
+      limit = 500
+
+      # Keep querying Bugzilla until there are no more results.
+      while True:
+          bug_results_chunk = self.fetch_intermittent_bugs(offset, limit)
+          bug_list += bug_results_chunk
+          if len(bug_results_chunk) < limit:
+              break
+          offset += limit
+
+      for bug in bug_list:
+          self.add_or_update_bug(bug['id'],
+                                 bug['status'],
+                                 bug['summary'],
+                                 bug['whiteboard'],
+                                 False)
 
   def _get_bugzilla_data(self, bugid_array):
     buginfo = {}
