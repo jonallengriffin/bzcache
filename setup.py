@@ -7,7 +7,7 @@ from setuptools import setup, find_packages
 
 version = '0.1.3'
 
-deps = ['mozautoeslib']
+deps = ['mozautoeslib', 'requests']
 
 if sys.version < '2.6' or sys.version >= '3.0':
     print >>sys.stderr, '%s requires Python >= 2.6 and < 3.0' % _PACKAGE_NAME
