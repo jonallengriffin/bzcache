@@ -13,10 +13,8 @@ import config
 class BugzillaCache(object):
 
   def __init__(self, logger=None, es_server=config.DEFAULT_ES_SERVER,
-               bzapi_server=config.DEFAULT_BZAPI_SERVER):
-    self.bzapi_server = bzapi_server
-    if self.bzapi_server[-1] != '/':
-      self.bzapi_server += '/'
+               bugzilla_api_url=config.DEFAULT_BUGZILLA_API_URL):
+    self.bugzilla_api_url = bugzilla_api_url.rstrip('/')
     self.doc_type = 'bugs'
     self.index = 'bzcache'
     self.eslib = ESLib(es_server, self.index)
@@ -61,7 +59,7 @@ class BugzillaCache(object):
       return response.json()
 
   def fetch_intermittent_bugs(self, offset, limit):
-      url = config.BUGZILLA_URL + '/rest/bug'
+      url = self.bugzilla_api_url + '/bug'
       params = {
           'keywords': 'intermittent-failure',
           # only look at bugs that have been updated in the last 6 months
@@ -102,7 +100,7 @@ class BugzillaCache(object):
     bugid_chunks = [list(bugid_array)[i:i+chunk_size]
                     for i in range(0, len(bugid_array), chunk_size)]
     for bugid_chunk in bugid_chunks:
-        apiURL = (self.bzapi_server + "bug?id=" + ','.join(bugid_array) +
+        apiURL = (self.bugzilla_api_url + "/bug?id=" + ','.join(bugid_array) +
                   "&include_fields=id,summary,status,whiteboard")
         bugs += self.fetch_json(apiURL).get('bugs', [])
     return bugs
