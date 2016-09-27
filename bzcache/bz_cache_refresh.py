@@ -31,9 +31,5 @@ if __name__ == "__main__":
                     default=config.DEFAULT_ES_SERVER,
                     help='address of ElasticSearch server; defaults to %s' %
                     config.DEFAULT_ES_SERVER)
-  parser.add_option('--of-server', dest='of_server',
-                    default=config.DEFAULT_OF_SERVER,
-                    help='address of OrangeFactor server; defaults to %s' %
-                    config.DEFAULT_OF_SERVER)
   options, _ = parser.parse_args()
   main(options)

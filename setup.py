@@ -5,7 +5,7 @@
 import sys
 from setuptools import setup, find_packages
 
-version = '0.1.3'
+version = '0.1.4'
 
 deps = ['mozautoeslib', 'requests']
 
@@ -22,7 +22,7 @@ setup(name='bzcache',
       keywords='',
       author='Jonathan Griffin',
       author_email='jgriffin@mozilla.com',
-      url='http://hg.mozilla.org/users/jgriffin_mozilla.com/bzcache/',
+      url='https://github.com/jonallengriffin/bzcache',
       license='MPL',
       packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
       include_package_data=True,
